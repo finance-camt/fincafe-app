@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>นำเข้าข้อมูลตัวอย่าง — FIN CAFE</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Sarabun',sans-serif;background:#F7F5F0;color:#22242E;max-width:720px;margin:40px auto;padding:0 20px;}
+  h1{font-family:'Prompt';color:#12215C;font-size:22px;}
+  p{color:#5B5F72;font-size:14.5px;line-height:1.7;}
+  .warn{background:#FDE7D1;border:1px solid #F0C68F;padding:14px 16px;border-radius:10px;font-size:13.5px;margin:16px 0;}
+  button{
+    background:#F18324;color:#fff;border:none;padding:14px 22px;border-radius:10px;
+    font-size:15px;font-weight:600;cursor:pointer;font-family:'Sarabun';
+  }
+  button:disabled{opacity:.5;cursor:not-allowed;}
+  #log{
+    margin-top:20px;background:#12215C;color:#fff;border-radius:10px;padding:16px;
+    font-family:monospace;font-size:12.5px;max-height:420px;overflow-y:auto;white-space:pre-wrap;
+  }
+  .ok{color:#7CD992;}
+  .err{color:#FF9B9B;}
+</style>
+</head>
+<body>
+
+<h1>นำเข้าข้อมูลตัวอย่าง ครั้งที่ 1–32</h1>
+<p>หน้านี้จะนำเข้าชื่อเรื่อง วันที่ และไฟล์ภาพปกจริงจาก Google Drive (ที่เคยดึงมาก่อนหน้านี้) เข้าสู่เว็บไซต์นี้โดยตรง
+ผ่านฟังก์ชันเดียวกับที่หน้า "หลังบ้านทีมงาน" ใช้ — เป็นการรันครั้งเดียวเพื่อเติมข้อมูลเริ่มต้นให้เท่านั้น</p>
+<div class="warn">
+  ⚠️ ถ้าหน้าเว็บมีข้อมูลครั้งที่ 1–32 อยู่แล้ว การกดปุ่มนี้จะ<b>เขียนทับ</b>ชื่อเรื่อง/วันที่ของครั้งนั้นๆ ด้วยข้อมูลชุดนี้
+  (ไฟล์ที่เคยอัปโหลดเพิ่มเติมเองจะไม่ถูกลบ แต่จะมีไฟล์ปกใหม่เพิ่มเข้าไปอีก 1 ไฟล์ในแต่ละครั้ง)
+  แนะนำให้ใช้เฉพาะตอนที่เว็บยังว่างอยู่ครั้งแรกเท่านั้น
+</div>
+<button id="startBtn">เริ่มนำเข้าข้อมูล 32 ครั้ง</button>
+<div id="log"></div>
+
+<script>
+const logEl = document.getElementById('log');
+function log(msg, cls){
+  const line = document.createElement('div');
+  if(cls) line.className = cls;
+  line.textContent = msg;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+async function apiCall(fnName, payload){
+  const res = await fetch('/.netlify/functions/' + fnName, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload || {})
+  });
+  let data;
+  try{ data = await res.json(); }catch(e){ data = null; }
+  if(!res.ok){
+    throw new Error((data && data.error) || ('HTTP ' + res.status));
+  }
+  return data;
+}
+
+document.getElementById('startBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true;
+  logEl.innerHTML = '';
+  log('กำลังโหลดชุดข้อมูล seed-data.json ...');
+
+  let sessions;
+  try{
+    const res = await fetch('/seed-data.json');
+    sessions = await res.json();
+    log('โหลดสำเร็จ พบทั้งหมด ' + sessions.length + ' ครั้ง', 'ok');
+  }catch(e){
+    log('โหลด seed-data.json ไม่สำเร็จ: ' + e.message, 'err');
+    btn.disabled = false;
+    return;
+  }
+
+  for(const s of sessions){
+    try{
+      log('ครั้งที่ ' + s.number + ' — ' + s.title + ' ...');
+      await apiCall('save-session', { number: s.number, title: s.title, date: s.date, pdca: s.pdca });
+
+      for(const slide of (s.slides || [])){
+        await apiCall('upload-file', {
+          number: s.number, isPhoto: false,
+          fileName: slide.name, mimeType: slide.mimeType, type: slide.type, base64: slide.base64
+        });
+      }
+      for(const photo of (s.photos || [])){
+        await apiCall('upload-file', {
+          number: s.number, isPhoto: true,
+          fileName: photo.name, mimeType: 'image/jpeg', type: 'image', base64: photo.base64
+        });
+      }
+      log('  ✓ ครั้งที่ ' + s.number + ' เสร็จแล้ว (' + (s.slides||[]).length + ' ไฟล์สไลด์, ' + (s.photos||[]).length + ' ภาพ)', 'ok');
+    }catch(e){
+      log('  ✗ ครั้งที่ ' + s.number + ' ผิดพลาด: ' + e.message, 'err');
+    }
+  }
+
+  log('');
+  log('นำเข้าข้อมูลเสร็จสมบูรณ์ — กลับไปที่หน้าหลักเพื่อดูผลได้เลย', 'ok');
+  btn.disabled = false;
+});
+</script>
+
+</body>
+</html>
