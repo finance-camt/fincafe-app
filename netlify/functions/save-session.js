@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { makeStore } = require('../lib/blobs-helper.js');
 
 exports.handler = async function (event) {
   try {
@@ -6,7 +6,7 @@ exports.handler = async function (event) {
     if (number === undefined || number === null) {
       return { statusCode: 400, body: JSON.stringify({ error: 'missing number' }) };
     }
-    const metaStore = getStore('fincafe-meta');
+    const metaStore = makeStore('fincafe-meta');
     await metaStore.set('meta:' + number, JSON.stringify({ title, date, pdca }));
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (err) {

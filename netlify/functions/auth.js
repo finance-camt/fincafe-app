@@ -1,11 +1,11 @@
-const { getStore } = require('@netlify/blobs');
+const { makeStore } = require('../lib/blobs-helper.js');
 
 const KEY = 'auth-hash';
 
 exports.handler = async function (event) {
   try {
     const { action, hash, oldHash, newHash } = JSON.parse(event.body || '{}');
-    const store = getStore('fincafe-auth');
+    const store = makeStore('fincafe-auth');
 
     if (action === 'hasPasscode') {
       const v = await store.get(KEY);

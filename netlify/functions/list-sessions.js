@@ -1,9 +1,9 @@
-const { getStore } = require('@netlify/blobs');
+const { makeStore } = require('../lib/blobs-helper.js');
 
 exports.handler = async function () {
   try {
-    const metaStore = getStore('fincafe-meta');
-    const filesStore = getStore('fincafe-sessionfiles');
+    const metaStore = makeStore('fincafe-meta');
+    const filesStore = makeStore('fincafe-sessionfiles');
 
     const { blobs } = await metaStore.list({ prefix: 'meta:' });
     const sessions = [];

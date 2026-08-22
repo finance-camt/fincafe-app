@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { makeStore } = require('../lib/blobs-helper.js');
 const crypto = require('crypto');
 
 exports.handler = async function (event) {
@@ -9,9 +9,9 @@ exports.handler = async function (event) {
     }
     const id = crypto.randomUUID();
 
-    const fileDataStore = getStore('fincafe-filedata');
-    const fileMetaStore = getStore('fincafe-filemeta');
-    const filesStore = getStore('fincafe-sessionfiles');
+    const fileDataStore = makeStore('fincafe-filedata');
+    const fileMetaStore = makeStore('fincafe-filemeta');
+    const filesStore = makeStore('fincafe-sessionfiles');
 
     const buffer = Buffer.from(base64, 'base64');
     await fileDataStore.set('filedata:' + id, buffer);

@@ -1,11 +1,11 @@
-const { getStore } = require('@netlify/blobs');
+const { makeStore } = require('../lib/blobs-helper.js');
 
 exports.handler = async function (event) {
   try {
     const { id, number } = JSON.parse(event.body || '{}');
-    const fileMetaStore = getStore('fincafe-filemeta');
-    const fileDataStore = getStore('fincafe-filedata');
-    const filesStore = getStore('fincafe-sessionfiles');
+    const fileMetaStore = makeStore('fincafe-filemeta');
+    const fileDataStore = makeStore('fincafe-filedata');
+    const filesStore = makeStore('fincafe-sessionfiles');
 
     await fileMetaStore.delete('filemeta:' + id);
     await fileDataStore.delete('filedata:' + id);
