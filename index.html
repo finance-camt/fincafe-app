@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#12215C;
+    --navy-700:#1C3089;
+    --navy-500:#2C43A8;
+    --navy-100:#EEF1FB;
+    --orange-600:#F18324;
+    --orange-100:#FDE7D1;
+    --paper:#F7F5F0;
+    --ink:#22242E;
+    --ink-soft:#5B5F72;
+    --line:#E1E0D9;
+    --green:#2F9E63;
+    --green-100:#E3F5EB;
+    --red:#D14343;
+    --red-100:#FBE7E7;
+    --white:#FFFFFF;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Sarabun',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Prompt',sans-serif;}
+  button{font-family:'Sarabun',sans-serif;}
+  .hidden{display:none !important;}
+
+  /* ---------- TOP BAR MODE SWITCH ---------- */
+  .modebar{
+    display:flex;justify-content:flex-end;gap:8px;
+    padding:10px 24px;background:var(--navy-900);
+  }
+  .modebar button{
+    background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.75);
+    padding:6px 14px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;
+  }
+  .modebar button.active{background:var(--orange-600);border-color:var(--orange-600);color:#fff;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    background:var(--navy-700);
+    overflow:hidden;
+    padding:50px 24px 64px;
+    color:var(--white);
+  }
+  .hero-swoop{
+    position:absolute; right:-10%; top:-35%;
+    width:900px; height:900px;
+    border-radius:50%;
+    background:var(--orange-600);
+    opacity:0.9;
+    clip-path: path('M450,0 C700,0 900,220 900,450 C900,680 700,900 450,900 L900,900 L900,0 Z');
+  }
+  .hero-inner{max-width:1080px;margin:0 auto;position:relative;z-index:2;}
+  .brandline{display:flex;align-items:center;gap:10px;font-size:13px;letter-spacing:.06em;color:rgba(255,255,255,.75);margin-bottom:22px;}
+  .brandline .dot{width:6px;height:6px;border-radius:50%;background:var(--orange-600);}
+  .wordmark{
+    font-family:'Prompt';font-weight:800;
+    font-size:clamp(56px,10vw,108px);
+    line-height:1;
+    letter-spacing:.01em;
+    margin:0;
+    color:#fff;
+  }
+  .wordmark span{color:var(--orange-600);}
+  .hero-caption{margin:14px 0 0;color:rgba(255,255,255,.75);font-size:15px;}
+
+  /* ---------- ARCHIVE STRIP ---------- */
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+  .archive{margin-top:-36px;position:relative;z-index:3;padding-bottom:8px;}
+  .archive-toolbar{display:flex;justify-content:flex-end;margin-bottom:10px;}
+  .search-box{
+    display:flex;align-items:center;gap:8px;
+    width:280px;max-width:100%;
+    border:1px solid var(--line);border-radius:10px;
+    padding:8px 14px;background:#fff;
+    box-shadow:0 6px 16px rgba(18,33,92,.06);
+  }
+  .search-box input{
+    border:none;outline:none;font-size:13.5px;font-family:'Sarabun';flex:1;background:transparent;
+  }
+  .search-box .icon{color:var(--ink-soft);font-size:14px;}
+  .archive-viewport{display:flex;align-items:center;gap:8px;}
+  .archive-window{flex:1;overflow:hidden;}
+  .archive-track{display:flex;gap:14px;transition:transform .32s ease;padding:6px 2px 14px;}
+  .archive-nav{
+    width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;
+    color:var(--navy-700);font-size:19px;cursor:pointer;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 16px rgba(18,33,92,.08);
+  }
+  .archive-nav:hover:not(:disabled){background:var(--navy-100);}
+  .archive-nav:disabled{opacity:.3;cursor:not-allowed;}
+  .session-card{
+    flex:0 0 calc(25% - 10.5px);
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px;
+    cursor:pointer;
+    box-shadow:0 10px 24px rgba(18,33,92,.08);
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .session-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(18,33,92,.14);}
+  .session-card.active{border-color:var(--orange-600);box-shadow:0 0 0 3px var(--orange-100);}
+  .session-card .num{font-family:'Prompt';font-weight:700;color:var(--orange-600);font-size:13px;}
+  .session-card .title{font-weight:600;font-size:14.5px;margin-top:6px;line-height:1.45;color:var(--navy-900);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.9em;}
+  .session-card .date{font-size:12px;color:var(--ink-soft);margin-top:8px;}
+  .empty-note{padding:40px 8px;color:var(--ink-soft);font-size:14px;}
+
+  @media (max-width:760px){
+    .session-card{flex-basis:calc(50% - 7px);}
+  }
+  @media (max-width:480px){
+    .session-card{flex-basis:100%;}
+  }
+
+  /* ---------- SECTION SHELL ---------- */
+  .section-title{
+    display:flex;align-items:baseline;gap:12px;margin:52px 0 20px;flex-wrap:wrap;
+  }
+  .section-title .idx{font-family:'Prompt';font-weight:700;color:var(--orange-600);font-size:15px;}
+  .section-title h2{font-size:22px;font-weight:700;color:var(--navy-900);margin:0;}
+  .section-title .sub{color:var(--ink-soft);font-size:13.5px;margin-left:auto;}
+
+  /* ---------- SLIDE SECTION ---------- */
+  .slide-panel{
+    display:grid;grid-template-columns:1.1fr .9fr;gap:28px;
+    background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+    padding:24px;box-shadow:0 6px 20px rgba(18,33,92,.05);
+  }
+  .slide-preview{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--navy-900);cursor:pointer;position:relative;}
+  .slide-preview img{display:block;width:100%;height:auto;}
+  .slide-preview .count-badge{
+    position:absolute;bottom:10px;right:10px;background:rgba(18,33,92,.75);color:#fff;
+    font-size:12px;padding:4px 10px;border-radius:999px;font-weight:600;
+  }
+  .slide-meta{display:flex;flex-direction:column;justify-content:center;gap:14px;}
+  .file-chip{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--navy-100);color:var(--navy-700);
+    padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:600;width:fit-content;
+  }
+  .slide-meta h3{margin:0;font-size:17px;color:var(--navy-900);}
+  .slide-meta p{margin:0;color:var(--ink-soft);font-size:14px;line-height:1.6;}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;justify-content:center;
+    background:var(--orange-600);color:#fff;border:none;
+    padding:11px 18px;border-radius:10px;font-weight:600;font-size:14px;
+    cursor:pointer;width:fit-content;
+  }
+  .btn.ghost{background:transparent;color:var(--navy-700);border:1px solid var(--line);}
+  .btn.danger{background:var(--red);}
+  .btn.small{padding:7px 12px;font-size:12.5px;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  /* ---------- PHOTO SECTION ---------- */
+  .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+  .photo-grid figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#fff;aspect-ratio:3/4;cursor:pointer;position:relative;}
+  .photo-grid img{width:100%;height:100%;object-fit:cover;display:block;}
+
+  /* ---------- PDCA SECTION ---------- */
+  .pdca-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .pdca-card{
+    background:var(--white);border:1px solid var(--line);border-radius:16px;
+    padding:18px;display:flex;flex-direction:column;gap:10px;
+  }
+  .pdca-card .letter{
+    width:34px;height:34px;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Prompt';font-weight:700;color:#fff;font-size:15px;
+  }
+  .pdca-card .letter.P{background:var(--navy-700);}
+  .pdca-card .letter.D{background:#3E5AC4;}
+  .pdca-card .letter.C{background:var(--orange-600);}
+  .pdca-card .letter.A{background:var(--green);}
+  .pdca-card h4{margin:0;font-size:14.5px;color:var(--navy-900);}
+  .pdca-card ul{margin:0;padding-left:16px;font-size:13px;color:var(--ink-soft);line-height:1.6;}
+  .pdca-card li{margin-bottom:4px;}
+
+  footer{text-align:center;padding:50px 24px 60px;color:var(--ink-soft);font-size:12.5px;}
+
+  /* ---------- FULLSCREEN VIEWER ---------- */
+  .viewer-overlay{
+    position:fixed;inset:0;background:rgba(10,14,35,.94);
+    z-index:1000;display:flex;flex-direction:column;
+  }
+  .viewer-top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;color:#fff;}
+  .viewer-top .vtitle{font-size:14px;color:rgba(255,255,255,.8);}
+  .viewer-top .vactions{display:flex;gap:10px;align-items:center;}
+  .icon-btn{
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;
+    width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:16px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,.2);}
+  .viewer-body{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0 70px;}
+  .viewer-body img, .viewer-body iframe{max-width:100%;max-height:100%;border:none;border-radius:6px;background:#fff;}
+  .viewer-body iframe{width:100%;height:100%;}
+  .viewer-nav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;
+    width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:20px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .viewer-nav:hover{background:rgba(255,255,255,.25);}
+  .viewer-nav.prev{left:16px;}
+  .viewer-nav.next{right:16px;}
+  .viewer-bottom{display:flex;justify-content:center;padding:14px;color:rgba(255,255,255,.7);font-size:13px;}
+
+  /* ---------- ADMIN ---------- */
+  .admin-wrap{max-width:960px;margin:0 auto;padding:32px 24px 80px;}
+  .admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+  .admin-header h1{font-size:24px;color:var(--navy-900);margin:0;}
+  .admin-list{display:flex;flex-direction:column;gap:10px;margin-bottom:30px;}
+  .admin-row{
+    display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);
+    border-radius:12px;padding:12px 16px;
+  }
+  .admin-row .meta{flex:1;}
+  .admin-row .meta b{color:var(--navy-900);font-size:14.5px;}
+  .admin-row .meta span{display:block;color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
+  .admin-card{
+    background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px;
+  }
+  .admin-card h3{margin:0 0 16px;font-size:16px;color:var(--navy-900);display:flex;align-items:center;gap:8px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--navy-900);margin-bottom:6px;}
+  .field input[type=text], .field input[type=number], .field input[type=date], .field textarea{
+    width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:14px;
+    font-family:'Sarabun';background:var(--paper);
+  }
+  .field textarea{resize:vertical;min-height:70px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .upload-zone{
+    border:1.5px dashed var(--line);border-radius:12px;padding:18px;text-align:center;
+    background:var(--navy-100);cursor:pointer;font-size:13.5px;color:var(--navy-700);font-weight:600;
+  }
+  .file-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .file-item{
+    display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;font-size:13px;
+  }
+  .file-item .fname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-item button{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;font-weight:600;}
+  .thumb-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .thumb-row .th{position:relative;width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid var(--line);}
+  .thumb-row .th img{width:100%;height:100%;object-fit:cover;}
+  .thumb-row .th button{
+    position:absolute;top:2px;right:2px;background:rgba(209,67,67,.9);color:#fff;border:none;
+    width:18px;height:18px;border-radius:50%;font-size:11px;cursor:pointer;line-height:1;
+  }
+  .pdca-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .bullet-edit{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+  .bullet-edit .brow{display:flex;gap:6px;}
+  .bullet-edit .brow input{flex:1;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-family:'Sarabun';}
+  .bullet-edit .brow button{background:var(--red-100);color:var(--red);border:none;border-radius:6px;width:28px;font-size:14px;cursor:pointer;}
+  .add-bullet{background:none;border:1px dashed var(--line);border-radius:6px;padding:5px;font-size:12.5px;color:var(--navy-700);cursor:pointer;margin-top:4px;}
+  .warn{background:var(--red-100);color:var(--red);padding:8px 12px;border-radius:8px;font-size:12.5px;margin-top:8px;}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--navy-900);color:#fff;padding:12px 20px;border-radius:10px;font-size:13.5px;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:2000;
+  }
+  .admin-footer-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+  .loading-note{color:var(--ink-soft);font-size:13.5px;padding:30px 0;text-align:center;}
+
+  @media (max-width:760px){
+    .slide-panel{grid-template-columns:1fr;}
+    .pdca-grid{grid-template-columns:1fr 1fr;}
+    .pdca-edit-grid{grid-template-columns:1fr;}
+    .row2{grid-template-columns:1fr;}
+    .hero{padding:36px 18px 52px;}
+    .viewer-body{padding:0 46px;}
+  }
+  @media (max-width:480px){
+    .pdca-grid{grid-template-columns:1fr;}
+  }
+</style>
+
+<style>
+  /* extra styles specific to the Apps Script edition */
+  .gs-note{font-size:11.5px;color:var(--ink-soft);text-align:center;padding:6px 24px 0;}
+</style>
+</head>
+<body>
+
+<div class="modebar">
+  <button id="modePublicBtn" class="active">หน้าหลัก</button>
+  <button id="modeAdminBtn">หลังบ้านทีมงาน</button>
+</div>
+
+<!-- ================= PUBLIC VIEW ================= -->
+<div id="publicView">
+  <section class="hero">
+    <div class="hero-swoop"></div>
+    <div class="hero-inner">
+      <div class="brandline">วิทยาลัยศิลปะ สื่อ และเทคโนโลยี มหาวิทยาลัยเชียงใหม่ <span class="dot"></span> งานการเงินการคลังและพัสดุ</div>
+      <h1 class="wordmark">FIN <span>CAFE</span></h1>
+      <p class="hero-caption">คลังสไลด์ ภาพกิจกรรม และผลประเมิน PDCA ของทุกครั้งที่จัดอบรม</p>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="archive">
+      <div class="archive-toolbar">
+        <div class="search-box">
+          <span class="icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="ค้นหาด้วยชื่อเรื่อง หรือครั้งที่...">
+        </div>
+      </div>
+      <div class="archive-viewport">
+        <button class="archive-nav" id="archivePrev">‹</button>
+        <div class="archive-window">
+          <div class="archive-track" id="archiveScroll"></div>
+        </div>
+        <button class="archive-nav" id="archiveNext">›</button>
+      </div>
+    </div>
+
+    <div id="sessionDetail"></div>
+  </div>
+
+  <footer>FIN CAFE · งานการเงินการคลังและพัสดุ วิทยาลัยศิลปะ สื่อ และเทคโนโลยี มหาวิทยาลัยเชียงใหม่</footer>
+  <div class="gs-note">ข้อมูลทั้งหมดบันทึกจริงบนเซิร์ฟเวอร์ ไม่หายเมื่อรีเฟรชหรือเปิดเครื่องใหม่</div>
+</div>
+
+<!-- ================= ADMIN VIEW ================= -->
+<div id="adminView" class="hidden">
+  <div class="admin-wrap">
+    <div id="adminStorageWarn" class="hidden" style="background:#FBE7E7;color:#7A2E2E;border:1px solid #E9B8B8;border-radius:10px;padding:10px 14px;font-size:12.5px;margin-bottom:16px;">
+      เชื่อมต่อระบบเก็บข้อมูล (Netlify Functions) ไม่สำเร็จ — ตรวจสอบว่า deploy ผ่าน Netlify แล้ว และเปิดใช้งาน Netlify Blobs สำหรับไซต์นี้แล้ว
+    </div>
+    <div class="admin-header">
+      <h1>หลังบ้าน FIN CAFE</h1>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost small" id="changePassBtn">เปลี่ยนรหัสผ่าน</button>
+        <button class="btn ghost small" id="logoutBtn">ออกจากระบบ</button>
+        <button class="btn" id="newSessionBtn">+ เพิ่มครั้งใหม่</button>
+      </div>
+    </div>
+    <div id="adminList" class="admin-list"></div>
+    <div id="adminForm"></div>
+  </div>
+</div>
+
+<!-- ================= AUTH GATE ================= -->
+<div id="authView" class="hidden">
+  <div style="max-width:380px;margin:80px auto;padding:0 24px;">
+    <div class="admin-card" id="authCard"></div>
+  </div>
+</div>
+
+<div id="toastHost"></div>
+
+<script>
+/* ================= NETLIFY FUNCTIONS FETCH WRAPPER ================= */
+async function apiCall(fnName, payload){
+  const res = await fetch('/.netlify/functions/' + fnName, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload || {})
+  });
+  let data;
+  try{ data = await res.json(); }catch(e){ data = null; }
+  if(!res.ok){
+    throw new Error((data && data.error) || ('เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ' + res.status + ')'));
+  }
+  return data;
+}
+
+function toast(msg){
+  const host = document.getElementById('toastHost');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  host.innerHTML = '';
+  host.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 2600);
+}
+
+async function sha256Hex(str){
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ================= DATA LAYER (reads/writes live via Apps Script -> Drive) ================= */
+let sessionsCache = {};
+let sessionIndex = [];
+let backendOk = true;
+
+async function loadAllSessions(){
+  try{
+    const sessions = await apiCall('list-sessions');
+    sessionsCache = {};
+    sessionIndex = [];
+    for(const s of sessions){
+      sessionsCache[s.id] = s;
+      sessionIndex.push(s.id);
+    }
+    backendOk = true;
+  }catch(e){
+    console.error('listSessions failed', e);
+    backendOk = false;
+    sessionsCache = {};
+    sessionIndex = [];
+  }
+  const warn = document.getElementById('adminStorageWarn');
+  if(warn) warn.classList.toggle('hidden', backendOk);
+}
+
+function orderedSessions(){
+  return sessionIndex.map(id => sessionsCache[id]).filter(Boolean)
+    .sort((a,b) => (b.number||0) - (a.number||0));
+}
+
+/* ================= FILE HELPERS (fetch/upload via Apps Script) ================= */
+const MAX_ORIGINAL_FILE_BYTES = 4.5 * 1024 * 1024; // ~4.5MB — Netlify Functions have a request-size limit
+
+function readFileAsDataURL(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+function fileTypeOf(file){
+  if(file.type === 'application/pdf') return 'pdf';
+  if(file.type.startsWith('image/')) return 'image';
+  if(file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || /\.docx?$/i.test(file.name)) return 'word';
+  if(file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' || file.type === 'application/vnd.ms-powerpoint' || /\.pptx?$/i.test(file.name)) return 'pptx';
+  return 'other';
+}
+function fileIconOf(type){
+  return type === 'pdf' ? '📄' : type === 'word' ? '📝' : type === 'pptx' ? '📊' : type === 'image' ? '🖼️' : '📎';
+}
+function humanSize(bytes){
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' KB';
+  return (bytes/1024/1024).toFixed(1) + ' MB';
+}
+function genId(){ return 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+const fileDataCache = {}; // fileId -> resolved dataUrl, cached for this page session
+
+async function resolveEntryDataUrl(entry){
+  if(entry.dataUrl) return entry.dataUrl; // freshly-added, not yet uploaded
+  if(fileDataCache[entry.id]) return fileDataCache[entry.id];
+  const res = await apiCall('get-file', { id: entry.id });
+  const dataUrl = 'data:' + res.mimeType + ';base64,' + res.base64;
+  fileDataCache[entry.id] = dataUrl;
+  return dataUrl;
+}
+async function materializeEntry(entry){
+  const dataUrl = await resolveEntryDataUrl(entry);
+  return { ...entry, dataUrl, _stored: entry.dataUrl ? null : { id: entry.id } };
+}
+async function materializeSession(session){
+  const slides = await Promise.all((session.slides||[]).map(materializeEntry));
+  const photos = await Promise.all((session.photos||[]).map(materializeEntry));
+  return { ...session, slides, photos, pdca: JSON.parse(JSON.stringify(session.pdca||{P:[],D:[],C:[],A:[]})) };
+}
+
+/* ================= AUTH (team passcode, checked server-side) ================= */
+let isAdminAuthed = false;
+
+function downloadFile(f){
+  const a = document.createElement('a');
+  a.href = f.dataUrl;
+  a.download = f.name || 'download';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/* ---------- PDF.js loader + page rendering ---------- */
+let pdfjsLoadPromise = null;
+function ensurePdfJs(){
+  if(pdfjsLoadPromise) return pdfjsLoadPromise;
+  pdfjsLoadPromise = new Promise((resolve, reject) => {
+    if(window.pdfjsLib){ resolve(window.pdfjsLib); return; }
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+    script.onload = () => {
+      try{
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        resolve(window.pdfjsLib);
+      }catch(e){ reject(e); }
+    };
+    script.onerror = () => reject(new Error('โหลดไลบรารีอ่าน PDF ไม่สำเร็จ (ต้องใช้อินเทอร์เน็ต)'));
+    document.head.appendChild(script);
+  });
+  return pdfjsLoadPromise;
+}
+const pdfDocCache = {};
+async function getPdfDoc(entry){
+  if(pdfDocCache[entry.id]) return pdfDocCache[entry.id];
+  const pdfjsLib = await ensurePdfJs();
+  const doc = await pdfjsLib.getDocument(entry.dataUrl).promise;
+  pdfDocCache[entry.id] = doc;
+  return doc;
+}
+async function buildViewerSequence(slides){
+  const seq = [];
+  for(const entry of slides){
+    if(entry.type === 'pdf'){
+      try{
+        const doc = await getPdfDoc(entry);
+        for(let p=1; p<=doc.numPages; p++){
+          seq.push({ kind:'pdf-page', entry, pageNum:p, totalPages:doc.numPages });
+        }
+      }catch(e){
+        console.error('PDF load failed for', entry.name, e);
+        seq.push({ kind:'file', entry, loadError:true });
+      }
+    } else {
+      seq.push({ kind:'file', entry });
+    }
+  }
+  return seq;
+}
+
+async function openSlideViewer(session, startFileIndex){
+  const overlay = document.createElement('div');
+  overlay.className = 'viewer-overlay';
+  overlay.innerHTML = `
+    <div class="viewer-top">
+      <div class="vtitle" id="vTitle">กำลังเปิดไฟล์…</div>
+      <div class="vactions">
+        <button class="icon-btn" id="vDownload" title="ดาวน์โหลดไฟล์นี้">⬇</button>
+        <button class="icon-btn" id="vClose" title="ปิด">✕</button>
+      </div>
+    </div>
+    <div class="viewer-body" id="vBody"><div style="color:rgba(255,255,255,.75);">กำลังโหลด…</div></div>
+    <div class="viewer-bottom" id="vBottom">&nbsp;</div>
+  `;
+  document.body.appendChild(overlay);
+
+  let seq = [];
+  let idx = 0;
+
+  function close(){
+    document.removeEventListener('keydown', onKey);
+    overlay.remove();
+  }
+  function go(delta){
+    if(seq.length < 2) return;
+    idx = (idx + delta + seq.length) % seq.length;
+    renderCurrent();
+  }
+  function onKey(e){
+    if(e.key === 'Escape') close();
+    else if(e.key === 'ArrowLeft') go(-1);
+    else if(e.key === 'ArrowRight') go(1);
+  }
+  document.addEventListener('keydown', onKey);
+  overlay.querySelector('#vClose').addEventListener('click', close);
+  overlay.querySelector('#vDownload').addEventListener('click', () => { if(seq[idx]) downloadFile(seq[idx].entry); });
+
+  async function renderCurrent(){
+    const item = seq[idx];
+    const titleEl = document.getElementById('vTitle');
+    const bottomEl = document.getElementById('vBottom');
+    const body = document.getElementById('vBody');
+    if(!item || !titleEl || !body) return;
+
+    titleEl.textContent = session.title + ' — ' + item.entry.name +
+      (item.kind === 'pdf-page' ? ` (หน้า ${item.pageNum}/${item.totalPages})` : '');
+    bottomEl.textContent = (idx+1) + ' / ' + seq.length;
+
+    body.innerHTML = '';
+    if(seq.length > 1){
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'viewer-nav prev';
+      prevBtn.textContent = '‹';
+      prevBtn.addEventListener('click', () => go(-1));
+      body.appendChild(prevBtn);
+    }
+    const contentWrap = document.createElement('div');
+    contentWrap.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;';
+    contentWrap.innerHTML = '<div style="color:rgba(255,255,255,.7);">กำลังโหลด…</div>';
+    body.appendChild(contentWrap);
+    if(seq.length > 1){
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'viewer-nav next';
+      nextBtn.textContent = '›';
+      nextBtn.addEventListener('click', () => go(1));
+      body.appendChild(nextBtn);
+    }
+
+    const renderToken = item;
+    if(item.kind === 'pdf-page'){
+      try{
+        const doc = await getPdfDoc(item.entry);
+        const page = await doc.getPage(item.pageNum);
+        if(seq[idx] !== renderToken) return;
+        const availW = Math.min(window.innerWidth - 180, 1100);
+        const availH = window.innerHeight - 160;
+        const base = page.getViewport({ scale: 1 });
+        const scale = Math.max(0.15, Math.min(availW / base.width, availH / base.height));
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.cssText = 'max-width:100%;max-height:100%;border-radius:6px;background:#fff;display:block;';
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        if(seq[idx] !== renderToken) return;
+        contentWrap.innerHTML = '';
+        contentWrap.appendChild(canvas);
+      }catch(e){
+        console.error(e);
+        if(seq[idx] !== renderToken) return;
+        contentWrap.innerHTML = `
+          <div style="background:#fff;border-radius:12px;padding:50px 40px;text-align:center;max-width:420px;">
+            <div style="font-size:40px;">📄</div>
+            <div style="margin-top:12px;font-weight:600;color:var(--navy-900);">ไม่สามารถแสดงหน้านี้ในเบราว์เซอร์ได้</div>
+            <div style="margin-top:8px;font-size:13px;color:var(--ink-soft);">กดดาวน์โหลดเพื่อเปิดดูไฟล์ต้นฉบับ</div>
+          </div>`;
+      }
+    } else if(item.entry.type === 'image'){
+      contentWrap.innerHTML = `<img src="${item.entry.dataUrl}" style="max-width:100%;max-height:100%;border-radius:6px;" alt="${escapeHtml(item.entry.name)}">`;
+    } else {
+      contentWrap.innerHTML = `
+        <div style="background:#fff;border-radius:12px;padding:60px 50px;text-align:center;max-width:420px;">
+          <div style="font-size:44px;">${fileIconOf(item.entry.type)}</div>
+          <div style="margin-top:14px;font-weight:600;color:var(--navy-900);word-break:break-word;">${escapeHtml(item.entry.name)}</div>
+          <div style="margin-top:8px;font-size:13px;color:var(--ink-soft);">ไฟล์ประเภทนี้แสดงตัวอย่างในเบราว์เซอร์ไม่ได้ — กดดาวน์โหลดเพื่อเปิดดู</div>
+        </div>`;
+    }
+  }
+
+  try{
+    seq = await buildViewerSequence(session.slides);
+  }catch(e){ console.error(e); }
+  if(seq.length === 0){
+    document.getElementById('vBody').innerHTML = '<div style="color:#fff;">ไม่มีไฟล์ให้แสดง</div>';
+    return;
+  }
+  const startEntry = session.slides[startFileIndex];
+  const found = seq.findIndex(it => it.entry === startEntry);
+  idx = found >= 0 ? found : 0;
+  renderCurrent();
+}
+
+function openPhotoViewer(session, startIndex){
+  let idx = startIndex;
+  const overlay = document.createElement('div');
+  overlay.className = 'viewer-overlay';
+  document.body.appendChild(overlay);
+
+  function render(){
+    const p = session.photos[idx];
+    overlay.innerHTML = `
+      <div class="viewer-top">
+        <div class="vtitle">ภาพกิจกรรม ${idx+1} / ${session.photos.length}</div>
+        <div class="vactions">
+          <button class="icon-btn" id="vDownload" title="ดาวน์โหลด">⬇</button>
+          <button class="icon-btn" id="vClose" title="ปิด">✕</button>
+        </div>
+      </div>
+      <div class="viewer-body">
+        ${session.photos.length > 1 ? '<button class="viewer-nav prev" id="vPrev">‹</button>' : ''}
+        <img src="${p.dataUrl}" alt="ภาพกิจกรรม ${idx+1}">
+        ${session.photos.length > 1 ? '<button class="viewer-nav next" id="vNext">›</button>' : ''}
+      </div>
+      <div class="viewer-bottom">&nbsp;</div>
+    `;
+    overlay.querySelector('#vClose').addEventListener('click', close);
+    overlay.querySelector('#vDownload').addEventListener('click', () => downloadFile(p));
+    const prevBtn = overlay.querySelector('#vPrev');
+    const nextBtn = overlay.querySelector('#vNext');
+    if(prevBtn) prevBtn.addEventListener('click', () => { idx = (idx-1+session.photos.length)%session.photos.length; render(); });
+    if(nextBtn) nextBtn.addEventListener('click', () => { idx = (idx+1)%session.photos.length; render(); });
+  }
+  function onKey(e){
+    if(e.key === 'Escape') close();
+    if(e.key === 'ArrowLeft' && session.photos.length>1){ idx = (idx-1+session.photos.length)%session.photos.length; render(); }
+    if(e.key === 'ArrowRight' && session.photos.length>1){ idx = (idx+1)%session.photos.length; render(); }
+  }
+  function close(){
+    document.removeEventListener('keydown', onKey);
+    overlay.remove();
+  }
+  document.addEventListener('keydown', onKey);
+  render();
+}
+
+/* ================= PUBLIC RENDER ================= */
+let currentSessionId = null;
+let currentDetailSession = null;
+let archivePage = 0;
+let searchQuery = '';
+
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatThaiDate(iso){
+  if(!iso) return '';
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const d = new Date(iso + 'T00:00:00');
+  if(isNaN(d)) return iso;
+  const be = d.getFullYear() + 543;
+  return d.getDate() + ' ' + months[d.getMonth()] + ' ' + be;
+}
+
+function getArchivePageSize(){
+  const w = window.innerWidth;
+  if(w <= 480) return 1;
+  if(w <= 760) return 2;
+  return 4;
+}
+function filteredSessions(){
+  const list = orderedSessions();
+  const q = searchQuery.trim().toLowerCase();
+  if(!q) return list;
+  return list.filter(s =>
+    (s.title||'').toLowerCase().includes(q) ||
+    String(s.number).includes(q) ||
+    ('ครั้งที่ ' + s.number).includes(q)
+  );
+}
+
+function renderArchive(){
+  const host = document.getElementById('archiveScroll');
+  const fullList = orderedSessions();
+  if(fullList.length === 0){
+    host.innerHTML = `<div class="empty-note">${backendOk ? 'ยังไม่มีข้อมูลกิจกรรม — ไปที่ "หลังบ้านทีมงาน" เพื่อเพิ่มครั้งแรก' : 'เชื่อมต่อระบบเก็บข้อมูลไม่สำเร็จ — ลองรีเฟรชหน้าเว็บ'}</div>`;
+    document.getElementById('sessionDetail').innerHTML = '';
+    document.getElementById('archivePrev').disabled = true;
+    document.getElementById('archiveNext').disabled = true;
+    return;
+  }
+  if(!currentSessionId || !sessionsCache[currentSessionId]){
+    currentSessionId = fullList[0].id;
+  }
+
+  const list = filteredSessions();
+  const pageSize = getArchivePageSize();
+  const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+  if(archivePage >= totalPages) archivePage = totalPages - 1;
+  if(archivePage < 0) archivePage = 0;
+
+  if(list.length === 0){
+    host.innerHTML = '<div class="empty-note">ไม่พบครั้งที่ตรงกับคำค้นหา</div>';
+  } else {
+    host.innerHTML = list.map(s => `
+      <div class="session-card ${s.id===currentSessionId?'active':''}" data-id="${s.id}">
+        <div class="num">ครั้งที่ ${s.number}${formatThaiDate(s.date) ? ' · ' + formatThaiDate(s.date) : ''}</div>
+        <div class="title">${escapeHtml(s.title)}</div>
+        <div class="date">${s.slides.length} ไฟล์สไลด์ · ${s.photos.length} ภาพ</div>
+      </div>
+    `).join('');
+    host.querySelectorAll('.session-card').forEach(card => {
+      card.addEventListener('click', () => {
+        currentSessionId = card.dataset.id;
+        renderArchive();
+        renderSessionDetail();
+      });
+    });
+  }
+
+  const windowEl = document.querySelector('.archive-window');
+  const pageWidthPx = windowEl ? windowEl.clientWidth + 14 : 0;
+  host.style.transform = 'translateX(-' + (archivePage * pageWidthPx) + 'px)';
+  document.getElementById('archivePrev').disabled = archivePage <= 0;
+  document.getElementById('archiveNext').disabled = archivePage >= totalPages - 1;
+
+  renderSessionDetail();
+}
+
+document.getElementById('archivePrev').addEventListener('click', () => { archivePage--; renderArchive(); });
+document.getElementById('archiveNext').addEventListener('click', () => { archivePage++; renderArchive(); });
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  archivePage = 0;
+  renderArchive();
+});
+window.addEventListener('resize', () => { renderArchive(); });
+
+async function renderSessionDetail(){
+  const host = document.getElementById('sessionDetail');
+  const raw = sessionsCache[currentSessionId];
+  if(!raw){ host.innerHTML = ''; return; }
+
+  const thisRequestId = currentSessionId;
+  host.innerHTML = '<div class="loading-note">กำลังโหลดไฟล์…</div>';
+  const s = await materializeSession(raw);
+  if(thisRequestId !== currentSessionId) return;
+  currentDetailSession = s;
+
+  const firstSlide = s.slides[0];
+  const slideThumbHtml = firstSlide
+    ? (firstSlide.type === 'image'
+        ? `<img src="${firstSlide.dataUrl}" alt="สไลด์">`
+        : `<div style="padding:60px 20px;text-align:center;color:#fff;">${fileIconOf(firstSlide.type)} ${escapeHtml(firstSlide.name)}<br><span style="font-size:12.5px;opacity:.7;">คลิกเพื่อดูแบบเต็มจอ</span></div>`)
+    : `<div style="padding:60px 20px;text-align:center;color:#fff;opacity:.7;">ยังไม่มีไฟล์สไลด์</div>`;
+
+  host.innerHTML = `
+    <div class="section-title">
+      <span class="idx">01</span><h2>สไลด์ที่นำเสนอ</h2>
+      <span class="sub">${s.slides.length} ไฟล์</span>
+    </div>
+    <div class="slide-panel">
+      <div class="slide-preview" id="openViewerBtn">
+        ${slideThumbHtml}
+        ${s.slides.length ? `<div class="count-badge">1 / ${s.slides.length}</div>` : ''}
+      </div>
+      <div class="slide-meta">
+        ${s.slides.map((f,i)=>`<span class="file-chip" data-dl="${i}" style="cursor:pointer;" title="ดาวน์โหลดไฟล์นี้">${fileIconOf(f.type)} ${escapeHtml(f.name)} ⬇</span>`).join('')}
+        ${s.slides.length>1?'<p style="margin:0;font-size:12px;color:var(--ink-soft);">คลิกชื่อไฟล์ด้านบนเพื่อดาวน์โหลดไฟล์นั้นๆ</p>':''}
+        <h3>${escapeHtml(s.title)}</h3>
+        <p>ครั้งที่ ${s.number}${formatThaiDate(s.date) ? ' · นำเสนอวันที่ ' + formatThaiDate(s.date) : ''}</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn" id="fullscreenBtn" ${!s.slides.length?'disabled':''}>ดูสไลด์เต็มจอ</button>
+          <button class="btn ghost" id="downloadFirstBtn" ${!s.slides.length?'disabled':''}>${s.slides.length>1?'ดาวน์โหลดไฟล์แรก':'ดาวน์โหลด'}</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <span class="idx">02</span><h2>ภาพบรรยากาศกิจกรรม</h2>
+      <span class="sub">${s.photos.length} ภาพ</span>
+    </div>
+    <div class="photo-grid" id="photoGrid">
+      ${s.photos.length ? s.photos.map((p,i)=>`<figure data-i="${i}"><img src="${p.dataUrl}" alt="ภาพกิจกรรม ${i+1}"></figure>`).join('')
+        : '<div class="empty-note">ยังไม่มีภาพกิจกรรม</div>'}
+    </div>
+  `;
+
+  if(s.slides.length){
+    document.getElementById('openViewerBtn').addEventListener('click', () => openSlideViewer(currentDetailSession, 0));
+    document.getElementById('fullscreenBtn').addEventListener('click', () => openSlideViewer(currentDetailSession, 0));
+    document.getElementById('downloadFirstBtn').addEventListener('click', () => downloadFile(currentDetailSession.slides[0]));
+    document.querySelectorAll('.file-chip[data-dl]').forEach(chip => {
+      chip.addEventListener('click', () => downloadFile(currentDetailSession.slides[parseInt(chip.dataset.dl)]));
+    });
+  }
+  document.querySelectorAll('#photoGrid figure').forEach(fig => {
+    fig.addEventListener('click', () => openPhotoViewer(currentDetailSession, parseInt(fig.dataset.i)));
+  });
+}
+
+/* ================= ADMIN RENDER ================= */
+let editingDraft = null;
+
+function blankSession(){
+  const nextNum = (Math.max(0, ...sessionIndex.map(id => (sessionsCache[id]?.number)||0)) + 1);
+  return {
+    id: 'new-' + Date.now(),
+    number: nextNum,
+    title: '',
+    date: '',
+    slides: [],
+    photos: [],
+    pdca: { P: [''], D: [''], C: [''], A: [''] },
+    _isNew: true,
+    _pendingDeletes: []
+  };
+}
+
+function renderAdminList(){
+  const host = document.getElementById('adminList');
+  const list = orderedSessions();
+  if(list.length === 0){
+    host.innerHTML = '<div class="empty-note">ยังไม่มีข้อมูล — กด "+ เพิ่มครั้งใหม่" เพื่อเริ่ม</div>';
+    return;
+  }
+  host.innerHTML = list.map(s => `
+    <div class="admin-row">
+      <div class="meta">
+        <b>ครั้งที่ ${s.number} — ${escapeHtml(s.title || '(ยังไม่ตั้งชื่อเรื่อง)')}</b>
+        <span>${formatThaiDate(s.date) || 'ยังไม่ระบุวันที่'} · ${s.slides.length} ไฟล์สไลด์ · ${s.photos.length} ภาพ</span>
+      </div>
+      <button class="btn ghost small" data-edit="${s.id}">แก้ไข</button>
+      <button class="btn danger small" data-del="${s.id}">ลบ</button>
+    </div>
+  `).join('');
+  host.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', async () => {
+    const host2 = document.getElementById('adminForm');
+    host2.innerHTML = '<div class="loading-note">กำลังโหลดข้อมูล…</div>';
+    editingDraft = await materializeSession(sessionsCache[b.dataset.edit]);
+    editingDraft._pendingDeletes = [];
+    renderAdminForm();
+  }));
+  host.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
+    const s = sessionsCache[b.dataset.del];
+    if(confirm(`ลบครั้งที่ ${s.number} — "${s.title}" ใช่หรือไม่? ไฟล์ใน Drive จะถูกย้ายไปถังขยะ`)){
+      try{
+        await apiCall('delete-session', { number: s.number });
+        await loadAllSessions();
+        if(editingDraft && editingDraft.id === b.dataset.del) { editingDraft = null; renderAdminForm(); }
+        renderAdminList();
+        renderArchive();
+        toast('ลบข้อมูลแล้ว');
+      }catch(e){
+        console.error(e);
+        toast('ลบไม่สำเร็จ: ' + (e && e.message || 'ลองใหม่อีกครั้ง'));
+      }
+    }
+  }));
+}
+
+function bulletEditorHtml(key, label, values){
+  return `
+    <div>
+      <label style="font-size:13px;font-weight:600;color:var(--navy-900);">${label}</label>
+      <div class="bullet-edit" data-bullets="${key}">
+        ${values.map((v,i) => `
+          <div class="brow">
+            <input type="text" value="${escapeHtml(v)}" data-k="${key}" data-i="${i}">
+            <button type="button" data-rm="${key}:${i}">✕</button>
+          </div>
+        `).join('')}
+      </div>
+      <button type="button" class="add-bullet" data-add="${key}">+ เพิ่มบรรทัด</button>
+    </div>
+  `;
+}
+
+function renderAdminForm(){
+  const host = document.getElementById('adminForm');
+  if(!editingDraft){ host.innerHTML = ''; return; }
+  const d = editingDraft;
+
+  host.innerHTML = `
+    <div class="admin-card">
+      <h3>${d._isNew ? 'เพิ่มครั้งใหม่' : 'แก้ไข ครั้งที่ ' + d.number}</h3>
+      <div class="row2">
+        <div class="field"><label>ครั้งที่</label><input type="number" id="f_number" value="${d.number}"></div>
+        <div class="field" style="grid-column:span 2;"><label>วันที่นำเสนอ</label><input type="date" id="f_date" value="${d.date||''}"></div>
+      </div>
+      <div class="field"><label>เรื่อง</label><input type="text" id="f_title" value="${escapeHtml(d.title)}" placeholder="เช่น แนวทางการกันเงินเหลื่อมปี 2569..."></div>
+    </div>
+
+    <div class="admin-card">
+      <h3>📄 ไฟล์สไลด์ (อัปโหลดได้มากกว่า 1 ไฟล์ — PDF, PowerPoint, Word หรือรูปภาพ)</h3>
+      <div class="upload-zone" id="slideDropzone">คลิกเพื่อเลือกไฟล์สไลด์ (PDF / PPT / Word / JPG / PNG)</div>
+      <p style="font-size:12px;color:var(--ink-soft);margin:8px 0 0;">ไฟล์จะถูกอัปโหลดและบันทึกไว้จริงบนเซิร์ฟเวอร์ ขนาดแนะนำไม่เกิน ~4.5MB/ไฟล์ (ข้อจำกัดของ Netlify Functions ต่อการเรียกครั้งเดียว) ไฟล์ใหญ่กว่านี้ควรบีบอัดก่อนอัปโหลด</p>
+      <input type="file" id="slideInput" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" multiple class="hidden">
+      <div id="slideFileList" class="file-list"></div>
+      <div id="slideWarn"></div>
+    </div>
+
+    <div class="admin-card">
+      <h3>🖼️ ภาพกิจกรรม</h3>
+      <div class="upload-zone" id="photoDropzone">คลิกเพื่อเลือกรูปภาพ (เลือกได้หลายรูป)</div>
+      <input type="file" id="photoInput" accept="image/*" multiple class="hidden">
+      <div id="photoThumbs" class="thumb-row"></div>
+      <div id="photoWarn"></div>
+    </div>
+
+    <div class="admin-card">
+      <h3>✅ ผลประเมิน PDCA</h3>
+      <div class="pdca-edit-grid">
+        <div>${bulletEditorHtml('P','P — วางแผน', d.pdca.P)}</div>
+        <div>${bulletEditorHtml('D','D — ปฏิบัติ', d.pdca.D)}</div>
+        <div>${bulletEditorHtml('C','C — ตรวจสอบ', d.pdca.C)}</div>
+        <div>${bulletEditorHtml('A','A — ปรับปรุง', d.pdca.A)}</div>
+      </div>
+    </div>
+
+    <div class="admin-footer-actions">
+      <button class="btn ghost" id="cancelEdit">ยกเลิก</button>
+      <button class="btn" id="saveSession">บันทึก</button>
+    </div>
+  `;
+
+  renderSlideFileList();
+  renderPhotoThumbs();
+
+  document.getElementById('f_number').addEventListener('input', e => d.number = parseInt(e.target.value)||0);
+  document.getElementById('f_date').addEventListener('input', e => d.date = e.target.value);
+  document.getElementById('f_title').addEventListener('input', e => d.title = e.target.value);
+
+  document.getElementById('slideDropzone').addEventListener('click', () => document.getElementById('slideInput').click());
+  document.getElementById('slideInput').addEventListener('change', async (e) => {
+    const warnHost = document.getElementById('slideWarn');
+    warnHost.innerHTML = '';
+    for(const file of e.target.files){
+      if(file.size > MAX_ORIGINAL_FILE_BYTES){
+        warnHost.innerHTML += `<div class="warn">"${escapeHtml(file.name)}" ขนาด ${humanSize(file.size)} ใหญ่เกินไป (แนะนำไม่เกิน ${humanSize(MAX_ORIGINAL_FILE_BYTES)}) — ลองบีบอัดไฟล์ก่อนอัปโหลด</div>`;
+        continue;
+      }
+      const dataUrl = await readFileAsDataURL(file);
+      d.slides.push({ id: genId(), name: file.name, type: fileTypeOf(file), dataUrl, sizeBytes: file.size });
+    }
+    e.target.value = '';
+    renderSlideFileList();
+  });
+  document.getElementById('photoDropzone').addEventListener('click', () => document.getElementById('photoInput').click());
+  document.getElementById('photoInput').addEventListener('change', async (e) => {
+    const warnHost = document.getElementById('photoWarn');
+    warnHost.innerHTML = '';
+    for(const file of e.target.files){
+      if(file.size > MAX_ORIGINAL_FILE_BYTES){
+        warnHost.innerHTML += `<div class="warn">"${escapeHtml(file.name)}" ขนาด ${humanSize(file.size)} ใหญ่เกินไป</div>`;
+        continue;
+      }
+      const dataUrl = await readFileAsDataURL(file);
+      d.photos.push({ id: genId(), name: file.name, dataUrl, sizeBytes: file.size });
+    }
+    e.target.value = '';
+    renderPhotoThumbs();
+  });
+
+  host.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => {
+    d.pdca[b.dataset.add].push('');
+    renderAdminForm();
+  }));
+  host.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+    const [k,i] = b.dataset.rm.split(':');
+    d.pdca[k].splice(parseInt(i),1);
+    if(d.pdca[k].length===0) d.pdca[k].push('');
+    renderAdminForm();
+  }));
+  host.querySelectorAll('[data-k]').forEach(inp => inp.addEventListener('input', () => {
+    d.pdca[inp.dataset.k][parseInt(inp.dataset.i)] = inp.value;
+  }));
+
+  document.getElementById('cancelEdit').addEventListener('click', () => {
+    editingDraft = null;
+    renderAdminForm();
+  });
+  document.getElementById('saveSession').addEventListener('click', async () => {
+    if(!d.title.trim()){ toast('กรุณาใส่ชื่อเรื่อง'); return; }
+    if(!d.date){ toast('กรุณาเลือกวันที่นำเสนอ'); return; }
+    d.pdca.P = d.pdca.P.filter(x=>x.trim());
+    d.pdca.D = d.pdca.D.filter(x=>x.trim());
+    d.pdca.C = d.pdca.C.filter(x=>x.trim());
+    d.pdca.A = d.pdca.A.filter(x=>x.trim());
+    const number = d.number;
+
+    const saveBtn = document.getElementById('saveSession');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'กำลังบันทึกไฟล์…';
+
+    async function processList(list, isPhoto){
+      const out = [];
+      for(const entry of list){
+        if(entry._stored){
+          out.push({ id: entry.id, name: entry.name, type: entry.type, sizeBytes: entry.sizeBytes });
+        } else {
+          const commaIdx = entry.dataUrl.indexOf(',');
+          const base64Only = entry.dataUrl.slice(commaIdx + 1);
+          const mimeMatch = entry.dataUrl.match(/^data:([^;]+);/);
+          const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+          const uploaded = await apiCall('upload-file', {
+            number, isPhoto, fileName: entry.name, mimeType: mime, type: entry.type, base64: base64Only
+          });
+          out.push({ id: uploaded.id, name: uploaded.name, type: entry.type, sizeBytes: entry.sizeBytes });
+        }
+      }
+      return out;
+    }
+
+    try{
+      await processList(d.slides, false);
+      await processList(d.photos, true);
+      await apiCall('save-session', { number, title: d.title, date: d.date, pdca: d.pdca });
+
+      if(d._pendingDeletes && d._pendingDeletes.length){
+        for(const meta of d._pendingDeletes){ await apiCall('delete-file', { id: meta.id, number }); }
+      }
+
+      await loadAllSessions();
+      toast('บันทึกสำเร็จ');
+      editingDraft = null;
+      renderAdminForm();
+      renderAdminList();
+      renderArchive();
+    }catch(err){
+      console.error(err);
+      toast((err && err.message) || 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'บันทึก';
+    }
+  });
+}
+
+function renderSlideFileList(){
+  const host = document.getElementById('slideFileList');
+  const d = editingDraft;
+  host.innerHTML = d.slides.map((f,i) => `
+    <div class="file-item">
+      <span>${fileIconOf(f.type)}</span>
+      <span class="fname">${escapeHtml(f.name)}</span>
+      <button type="button" data-rmslide="${i}">ลบ</button>
+    </div>
+  `).join('') || '<div style="color:var(--ink-soft);font-size:12.5px;">ยังไม่มีไฟล์</div>';
+  host.querySelectorAll('[data-rmslide]').forEach(b => b.addEventListener('click', () => {
+    const idx = parseInt(b.dataset.rmslide);
+    const [removed] = d.slides.splice(idx,1);
+    if(removed && removed._stored){
+      d._pendingDeletes = d._pendingDeletes || [];
+      d._pendingDeletes.push(removed._stored);
+    }
+    renderSlideFileList();
+  }));
+}
+function renderPhotoThumbs(){
+  const host = document.getElementById('photoThumbs');
+  const d = editingDraft;
+  host.innerHTML = d.photos.map((p,i) => `
+    <div class="th">
+      <img src="${p.dataUrl}">
+      <button type="button" data-rmphoto="${i}">✕</button>
+    </div>
+  `).join('') || '<div style="color:var(--ink-soft);font-size:12.5px;">ยังไม่มีรูป</div>';
+  host.querySelectorAll('[data-rmphoto]').forEach(b => b.addEventListener('click', () => {
+    const idx = parseInt(b.dataset.rmphoto);
+    const [removed] = d.photos.splice(idx,1);
+    if(removed && removed._stored){
+      d._pendingDeletes = d._pendingDeletes || [];
+      d._pendingDeletes.push(removed._stored);
+    }
+    renderPhotoThumbs();
+  }));
+}
+
+document.getElementById('newSessionBtn').addEventListener('click', () => {
+  editingDraft = blankSession();
+  renderAdminForm();
+  document.getElementById('adminForm').scrollIntoView({behavior:'smooth'});
+});
+
+/* ================= MODE SWITCH + AUTH GATE ================= */
+function showView(name){
+  document.getElementById('publicView').classList.toggle('hidden', name!=='public');
+  document.getElementById('adminView').classList.toggle('hidden', name!=='admin');
+  document.getElementById('authView').classList.toggle('hidden', name!=='auth');
+  document.getElementById('modePublicBtn').classList.toggle('active', name==='public');
+  document.getElementById('modeAdminBtn').classList.toggle('active', name==='admin' || name==='auth');
+}
+
+document.getElementById('modePublicBtn').addEventListener('click', () => showView('public'));
+
+document.getElementById('modeAdminBtn').addEventListener('click', async () => {
+  if(isAdminAuthed){
+    showView('admin');
+    renderAdminList();
+    return;
+  }
+  showView('auth');
+  document.getElementById('authCard').innerHTML = '<div class="loading-note">กำลังตรวจสอบ…</div>';
+  try{
+    const { result: exists } = await apiCall('auth', { action: 'hasPasscode' });
+    if(!exists) renderAuthSetup(); else renderAuthLogin();
+  }catch(e){
+    document.getElementById('authCard').innerHTML = '<div class="warn">เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ ลองรีเฟรชหน้าเว็บ</div>';
+  }
+});
+
+function renderAuthSetup(){
+  const card = document.getElementById('authCard');
+  card.innerHTML = `
+    <h3>🔒 ตั้งรหัสผ่านทีมงาน (ครั้งแรก)</h3>
+    <p style="font-size:13px;color:var(--ink-soft);margin:-6px 0 14px;line-height:1.6;">
+      ยังไม่เคยตั้งรหัสผ่านสำหรับหลังบ้าน — ตั้งครั้งเดียวแล้วแจ้งเฉพาะทีมงานที่ดูแล Fin Café
+    </p>
+    <div class="field"><label>ตั้งรหัสผ่าน (อย่างน้อย 4 ตัวอักษร)</label><input type="text" id="a_pass1"></div>
+    <div class="field"><label>ยืนยันรหัสผ่านอีกครั้ง</label><input type="text" id="a_pass2"></div>
+    <div id="authWarn"></div>
+    <div class="admin-footer-actions">
+      <button class="btn ghost" id="authCancel">ยกเลิก</button>
+      <button class="btn" id="authSubmit">ตั้งรหัสผ่านและเข้าใช้งาน</button>
+    </div>
+  `;
+  document.getElementById('authCancel').addEventListener('click', () => showView('public'));
+  document.getElementById('authSubmit').addEventListener('click', async () => {
+    const p1 = document.getElementById('a_pass1').value;
+    const p2 = document.getElementById('a_pass2').value;
+    const warn = document.getElementById('authWarn');
+    if(p1.length < 4){ warn.innerHTML = '<div class="warn">รหัสผ่านสั้นเกินไป</div>'; return; }
+    if(p1 !== p2){ warn.innerHTML = '<div class="warn">รหัสผ่านทั้งสองช่องไม่ตรงกัน</div>'; return; }
+    try{
+      const hash = await sha256Hex(p1);
+      await apiCall('auth', { action: 'setPasscode', hash });
+      isAdminAuthed = true;
+      toast('ตั้งรหัสผ่านสำเร็จ');
+      showView('admin');
+      renderAdminList();
+    }catch(e){
+      warn.innerHTML = '<div class="warn">บันทึกรหัสผ่านไม่สำเร็จ ลองใหม่อีกครั้ง</div>';
+    }
+  });
+}
+
+function renderAuthLogin(){
+  const card = document.getElementById('authCard');
+  card.innerHTML = `
+    <h3>🔒 เข้าสู่ระบบทีมงาน</h3>
+    <div class="field"><label>รหัสผ่าน</label><input type="text" id="a_pass"></div>
+    <div id="authWarn"></div>
+    <div class="admin-footer-actions">
+      <button class="btn ghost" id="authCancel">ยกเลิก</button>
+      <button class="btn" id="authSubmit">เข้าสู่ระบบ</button>
+    </div>
+  `;
+  const submit = async () => {
+    const p = document.getElementById('a_pass').value;
+    try{
+      const hash = await sha256Hex(p);
+      const { result: ok } = await apiCall('auth', { action: 'checkPasscode', hash });
+      if(ok){
+        isAdminAuthed = true;
+        showView('admin');
+        renderAdminList();
+      } else {
+        document.getElementById('authWarn').innerHTML = '<div class="warn">รหัสผ่านไม่ถูกต้อง</div>';
+      }
+    }catch(e){
+      document.getElementById('authWarn').innerHTML = '<div class="warn">เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ</div>';
+    }
+  };
+  document.getElementById('authCancel').addEventListener('click', () => showView('public'));
+  document.getElementById('authSubmit').addEventListener('click', submit);
+  document.getElementById('a_pass').addEventListener('keydown', e => { if(e.key==='Enter') submit(); });
+}
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  isAdminAuthed = false;
+  editingDraft = null;
+  showView('public');
+  toast('ออกจากระบบแล้ว');
+});
+
+document.getElementById('changePassBtn').addEventListener('click', async () => {
+  const oldPass = prompt('ใส่รหัสผ่านเดิม:');
+  if(oldPass === null) return;
+  const newPass = prompt('ตั้งรหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร):');
+  if(newPass === null) return;
+  if(newPass.length < 4){ toast('รหัสผ่านสั้นเกินไป'); return; }
+  try{
+    const oldHash = await sha256Hex(oldPass);
+    const newHash = await sha256Hex(newPass);
+    const { result: ok } = await apiCall('auth', { action: 'changePasscode', oldHash, newHash });
+    if(ok) toast('เปลี่ยนรหัสผ่านสำเร็จ');
+    else toast('รหัสผ่านเดิมไม่ถูกต้อง');
+  }catch(e){
+    toast('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ');
+  }
+});
+
+/* ================= INIT ================= */
+(async function init(){
+  document.getElementById('archiveScroll').innerHTML = '<div class="empty-note">กำลังโหลดข้อมูล…</div>';
+  await loadAllSessions();
+  renderArchive();
+})();
+</script>
+
+</body>
+</html>
