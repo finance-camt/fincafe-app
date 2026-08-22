@@ -449,6 +449,14 @@ function fileTypeOf(file){
 function fileIconOf(type){
   return type === 'pdf' ? '📄' : type === 'word' ? '📝' : type === 'pptx' ? '📊' : type === 'image' ? '🖼️' : '📎';
 }
+function guessTypeFromName(name){
+  const lower = name.toLowerCase();
+  if(/\.pdf$/i.test(lower)) return 'pdf';
+  if(/\.docx?$/i.test(lower)) return 'word';
+  if(/\.pptx?$/i.test(lower)) return 'pptx';
+  if(/\.(jpg|jpeg|png|gif|webp)$/i.test(lower)) return 'image';
+  return 'other';
+}
 function humanSize(bytes){
   if(bytes < 1024) return bytes + ' B';
   if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' KB';
@@ -459,6 +467,7 @@ function genId(){ return 'f' + Date.now().toString(36) + Math.random().toString(
 const fileDataCache = {}; // fileId -> resolved dataUrl, cached for this page session
 
 async function resolveEntryDataUrl(entry){
+  if(entry.link) return null; // link-type entries have no bytes to fetch — use entry.link directly
   if(entry.dataUrl) return entry.dataUrl; // freshly-added, not yet uploaded
   if(fileDataCache[entry.id]) return fileDataCache[entry.id];
   const res = await apiCall('get-file', { id: entry.id });
@@ -467,6 +476,7 @@ async function resolveEntryDataUrl(entry){
   return dataUrl;
 }
 async function materializeEntry(entry){
+  if(entry.link) return { ...entry, dataUrl: null, _stored: { id: entry.id } };
   const dataUrl = await resolveEntryDataUrl(entry);
   return { ...entry, dataUrl, _stored: entry.dataUrl ? null : { id: entry.id } };
 }
@@ -480,6 +490,10 @@ async function materializeSession(session){
 let isAdminAuthed = false;
 
 function downloadFile(f){
+  if(f.link){
+    window.open(f.link, '_blank', 'noopener');
+    return;
+  }
   const a = document.createElement('a');
   a.href = f.dataUrl;
   a.download = f.name || 'download';
@@ -511,7 +525,8 @@ const pdfDocCache = {};
 async function getPdfDoc(entry){
   if(pdfDocCache[entry.id]) return pdfDocCache[entry.id];
   const pdfjsLib = await ensurePdfJs();
-  const doc = await pdfjsLib.getDocument(entry.dataUrl).promise;
+  const source = entry.link || entry.dataUrl;
+  const doc = await pdfjsLib.getDocument(source).promise;
   pdfDocCache[entry.id] = doc;
   return doc;
 }
@@ -633,13 +648,15 @@ async function openSlideViewer(session, startFileIndex){
           </div>`;
       }
     } else if(item.entry.type === 'image'){
-      contentWrap.innerHTML = `<img src="${item.entry.dataUrl}" style="max-width:100%;max-height:100%;border-radius:6px;" alt="${escapeHtml(item.entry.name)}">`;
+      const imgSrc = item.entry.link || item.entry.dataUrl;
+      contentWrap.innerHTML = `<img src="${imgSrc}" style="max-width:100%;max-height:100%;border-radius:6px;" alt="${escapeHtml(item.entry.name)}">`;
     } else {
+      const isLink = !!item.entry.link;
       contentWrap.innerHTML = `
         <div style="background:#fff;border-radius:12px;padding:60px 50px;text-align:center;max-width:420px;">
-          <div style="font-size:44px;">${fileIconOf(item.entry.type)}</div>
+          <div style="font-size:44px;">${isLink ? '🔗' : fileIconOf(item.entry.type)}</div>
           <div style="margin-top:14px;font-weight:600;color:var(--navy-900);word-break:break-word;">${escapeHtml(item.entry.name)}</div>
-          <div style="margin-top:8px;font-size:13px;color:var(--ink-soft);">ไฟล์ประเภทนี้แสดงตัวอย่างในเบราว์เซอร์ไม่ได้ — กดดาวน์โหลดเพื่อเปิดดู</div>
+          <div style="margin-top:8px;font-size:13px;color:var(--ink-soft);">${isLink ? 'ไฟล์นี้เก็บไว้ภายนอก — กดปุ่มด้านบนเพื่อเปิดลิงก์' : 'ไฟล์ประเภทนี้แสดงตัวอย่างในเบราว์เซอร์ไม่ได้ — กดดาวน์โหลดเพื่อเปิดดู'}</div>
         </div>`;
     }
   }
@@ -821,7 +838,7 @@ async function renderSessionDetail(){
         ${s.slides.length ? `<div class="count-badge">1 / ${s.slides.length}</div>` : ''}
       </div>
       <div class="slide-meta">
-        ${s.slides.map((f,i)=>`<span class="file-chip" data-dl="${i}" style="cursor:pointer;" title="ดาวน์โหลดไฟล์นี้">${fileIconOf(f.type)} ${escapeHtml(f.name)} ⬇</span>`).join('')}
+        ${s.slides.map((f,i)=>`<span class="file-chip" data-dl="${i}" style="cursor:pointer;" title="${f.link?'เปิดลิงก์ไฟล์นี้':'ดาวน์โหลดไฟล์นี้'}">${f.link?'🔗':fileIconOf(f.type)} ${escapeHtml(f.name)} ${f.link?'↗':'⬇'}</span>`).join('')}
         ${s.slides.length>1?'<p style="margin:0;font-size:12px;color:var(--ink-soft);">คลิกชื่อไฟล์ด้านบนเพื่อดาวน์โหลดไฟล์นั้นๆ</p>':''}
         <h3>${escapeHtml(s.title)}</h3>
         <p>ครั้งที่ ${s.number}${formatThaiDate(s.date) ? ' · นำเสนอวันที่ ' + formatThaiDate(s.date) : ''}</p>
@@ -954,6 +971,14 @@ function renderAdminForm(){
       <input type="file" id="slideInput" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" multiple class="hidden">
       <div id="slideFileList" class="file-list"></div>
       <div id="slideWarn"></div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);">
+        <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 8px;">หรือไฟล์ใหญ่เกิน 4.5MB? แปะลิงก์ไฟล์แทนได้ (เช่น ลิงก์แชร์แบบเปิดดูได้จาก Google Drive) — จะไม่ผ่านข้อจำกัดขนาดไฟล์เลย</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="text" id="slideLinkName" placeholder="ชื่อไฟล์ เช่น สไลด์เต็ม.pdf" style="flex:1;min-width:160px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;font-family:'Sarabun';">
+          <input type="text" id="slideLinkUrl" placeholder="วางลิงก์ไฟล์ที่นี่" style="flex:2;min-width:200px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;font-family:'Sarabun';">
+          <button type="button" class="btn ghost small" id="addSlideLinkBtn">+ เพิ่มลิงก์</button>
+        </div>
+      </div>
     </div>
 
     <div class="admin-card">
@@ -1003,6 +1028,19 @@ function renderAdminForm(){
     renderSlideFileList();
   });
   document.getElementById('photoDropzone').addEventListener('click', () => document.getElementById('photoInput').click());
+  document.getElementById('addSlideLinkBtn').addEventListener('click', () => {
+    const nameInput = document.getElementById('slideLinkName');
+    const urlInput = document.getElementById('slideLinkUrl');
+    const name = nameInput.value.trim();
+    const url = urlInput.value.trim();
+    if(!url){ toast('กรุณาวางลิงก์ไฟล์ก่อน'); return; }
+    if(!/^https?:\/\//i.test(url)){ toast('ลิงก์ต้องขึ้นต้นด้วย http:// หรือ https://'); return; }
+    const finalName = name || url.split('/').pop().split('?')[0] || 'ไฟล์ลิงก์';
+    d.slides.push({ id: genId(), name: finalName, type: guessTypeFromName(finalName), link: url, sizeBytes: 0 });
+    nameInput.value = '';
+    urlInput.value = '';
+    renderSlideFileList();
+  });
   document.getElementById('photoInput').addEventListener('change', async (e) => {
     const warnHost = document.getElementById('photoWarn');
     warnHost.innerHTML = '';
@@ -1053,7 +1091,14 @@ function renderAdminForm(){
       const out = [];
       for(const entry of list){
         if(entry._stored){
-          out.push({ id: entry.id, name: entry.name, type: entry.type, sizeBytes: entry.sizeBytes });
+          const item = { id: entry.id, name: entry.name, type: entry.type, sizeBytes: entry.sizeBytes };
+          if(entry.link) item.link = entry.link;
+          out.push(item);
+        } else if(entry.link){
+          const uploaded = await apiCall('upload-file', {
+            number, isPhoto, fileName: entry.name, type: entry.type, link: entry.link
+          });
+          out.push({ id: uploaded.id, name: uploaded.name, type: entry.type, sizeBytes: 0, link: entry.link });
         } else {
           const commaIdx = entry.dataUrl.indexOf(',');
           const base64Only = entry.dataUrl.slice(commaIdx + 1);
@@ -1097,8 +1142,8 @@ function renderSlideFileList(){
   const d = editingDraft;
   host.innerHTML = d.slides.map((f,i) => `
     <div class="file-item">
-      <span>${fileIconOf(f.type)}</span>
-      <span class="fname">${escapeHtml(f.name)}</span>
+      <span>${f.link ? '🔗' : fileIconOf(f.type)}</span>
+      <span class="fname">${escapeHtml(f.name)}${f.link ? ' <span style="color:var(--ink-soft);font-weight:400;">(ลิงก์ภายนอก)</span>' : ''}</span>
       <button type="button" data-rmslide="${i}">ลบ</button>
     </div>
   `).join('') || '<div style="color:var(--ink-soft);font-size:12.5px;">ยังไม่มีไฟล์</div>';

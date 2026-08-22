@@ -15,10 +15,10 @@ exports.handler = async function () {
 
       const slides = filesRaw
         .filter((f) => !f.isPhoto)
-        .map((f) => ({ id: f.id, name: f.name, type: f.type, sizeBytes: f.sizeBytes }));
+        .map((f) => ({ id: f.id, name: f.name, type: f.type, sizeBytes: f.sizeBytes, link: f.link || null }));
       const photos = filesRaw
         .filter((f) => f.isPhoto)
-        .map((f) => ({ id: f.id, name: f.name, sizeBytes: f.sizeBytes }));
+        .map((f) => ({ id: f.id, name: f.name, sizeBytes: f.sizeBytes, link: f.link || null }));
 
       sessions.push({
         id: String(number),
