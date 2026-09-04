@@ -1,17 +1,1 @@
-{
-  "name": "fincafe-netlify",
-  "version": "1.0.0",
-  "private": true,
-  "description": "FIN CAFE archive — Netlify Functions + Netlify Blobs backend",
-  "dependencies": {
-    "@netlify/blobs": "^8.2.0"
-  },
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },"build": "vite build"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
-}
+{ "name": "fincafe-netlify", "version": "1.0.0", "private": true, "description": "...", "dependencies": { "@netlify/blobs": "^8.2.0" }, "scripts": { "test": "..." }, "keywords": [], "author": "", "license": "ISC" }
